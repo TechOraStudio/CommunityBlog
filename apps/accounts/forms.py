@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 
@@ -34,19 +35,23 @@ class LoginForm(AuthenticationForm):
     """Login form ensuring non-staff accounts must have a verified email."""
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
-        # Superusers and staff bypass email verification
-        if not user.is_email_verified and not (user.is_superuser or user.is_staff):
-            raise ValidationError(
-                'Your email address is not verified yet. Please check your inbox or request a new verification email.',
-                code='unverified_email'
-            )
+        if user.is_email_verified or user.is_superuser or user.is_staff:
+            return
+        if settings.AUTO_VERIFY_EMAILS:
+            user.is_email_verified = True
+            user.save(update_fields=['is_email_verified'])
+            return
+        raise ValidationError(
+            'Your email address is not verified yet. Please check your inbox or request a new verification email.',
+            code='unverified_email'
+        )
 
 
 class ProfileForm(forms.ModelForm):
     """Profile editing form for learners."""
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'bio')
+        fields = ('first_name', 'last_name', 'profile_photo', 'bio')
         widgets = {
             'bio': forms.Textarea(attrs={
                 'class': 'form-textarea',
@@ -55,6 +60,10 @@ class ProfileForm(forms.ModelForm):
             }),
             'first_name': forms.TextInput(attrs={'class': 'form-input'}),
             'last_name': forms.TextInput(attrs={'class': 'form-input'}),
+            'profile_photo': forms.ClearableFileInput(attrs={
+                'class': 'form-input',
+                'accept': 'image/*'
+            }),
         }
 
 

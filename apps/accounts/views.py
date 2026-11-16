@@ -1,8 +1,15 @@
+import logging
+import smtplib
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.http import (
+    url_has_allowed_host_and_scheme,
+    urlsafe_base64_decode,
+    urlsafe_base64_encode,
+)
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import send_mail
 from django.urls import reverse
@@ -15,6 +22,13 @@ from apps.moderation.models import AdminNotification, NotificationType
 from apps.posts.models import PostStatus
 
 
+logger = logging.getLogger(__name__)
+
+
+class VerificationEmailError(Exception):
+    """Raised when the configured email backend does not send the message."""
+
+
 def send_verification_email(request, user):
     """Generate email verification link and send email to user."""
     uid = urlsafe_base64_encode(force_bytes(user.pk))
@@ -22,21 +36,37 @@ def send_verification_email(request, user):
     verify_url = request.build_absolute_uri(
         reverse('accounts:verify_email', kwargs={'uidb64': uid, 'token': token})
     )
-    subject = 'Verify your email address - LearnThread'
+    subject = 'Verify your email address - CommunityBlog'
     message = (
         f"Hi {user.username},\n\n"
-        f"Thank you for joining LearnThread!\n"
+        f"Thank you for joining CommunityBlog!\n"
         f"Please verify your email address by clicking the link below:\n\n"
         f"{verify_url}\n\n"
         f"If you did not create this account, you can safely ignore this email.\n"
     )
-    send_mail(
+    sent_count = send_mail(
         subject,
         message,
         settings.DEFAULT_FROM_EMAIL,
         [user.email],
         fail_silently=False
     )
+    if sent_count != 1:
+        raise VerificationEmailError('The verification message was not accepted by the email backend.')
+
+
+def send_verification_with_feedback(request, user):
+    try:
+        send_verification_email(request, user)
+    except (OSError, smtplib.SMTPException, VerificationEmailError):
+        logger.exception('Could not send verification email for user id %s.', user.pk)
+        messages.error(
+            request,
+            'Your account was created, but the verification email could not be sent. '
+            'Please check the email server settings or ask the administrator for help.'
+        )
+        return False
+    return True
 
 
 def register_view(request):
@@ -48,14 +78,26 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
-            user.is_email_verified = False
+            user.is_email_verified = settings.AUTO_VERIFY_EMAILS
             user.save()
-            send_verification_email(request, user)
-            messages.success(
-                request,
-                'Registration successful! We have sent a verification email to your address. '
-                'Please verify your email before logging in.'
-            )
+            if settings.AUTO_VERIFY_EMAILS:
+                messages.info(
+                    request,
+                    'Account created and verified automatically for local development.'
+                )
+            elif send_verification_with_feedback(request, user):
+                if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                    messages.info(
+                        request,
+                        'Account created. In development, the verification link is printed in the server terminal. '
+                        'Configure SMTP to deliver it to your inbox.'
+                    )
+                else:
+                    messages.success(
+                        request,
+                        'Registration successful! We have sent a verification email to your address. '
+                        'Please verify your email before logging in.'
+                    )
             return redirect('accounts:login')
     else:
         form = RegisterForm()
@@ -90,8 +132,15 @@ def resend_verification_view(request):
                 if user.is_email_verified:
                     messages.info(request, 'This email address is already verified. You can log in.')
                     return redirect('accounts:login')
-                send_verification_email(request, user)
-            messages.success(request, 'If an account exists with this email, a verification link has been sent.')
+                if not send_verification_with_feedback(request, user):
+                    return redirect('accounts:login')
+            if settings.EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend':
+                messages.info(
+                    request,
+                    'If an account exists, its verification link is printed in the development server terminal.'
+                )
+            else:
+                messages.success(request, 'If an account exists with this email, a verification link has been sent.')
             return redirect('accounts:login')
     else:
         form = ResendVerificationForm()
@@ -109,7 +158,13 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
-            next_url = request.GET.get('next') or 'posts:post_list'
+            next_url = request.POST.get('next') or request.GET.get('next')
+            if not url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure()
+            ):
+                next_url = reverse('posts:post_list')
             return redirect(next_url)
     else:
         form = LoginForm()
@@ -128,7 +183,7 @@ def logout_view(request):
 def profile_edit_view(request):
     """Edit own profile (FR-41)."""
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=request.user)
+        form = ProfileForm(request.POST, request.FILES, instance=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, 'Your profile has been updated.')

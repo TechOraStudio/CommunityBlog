@@ -4,10 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}LearnThread{% endblock %} — Moderated Community Blog</title>
+    <title>{% block title %}CommunityBlog{% endblock %} — Moderated Community Blog</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Nastaliq+Urdu&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     {% block extra_head %}{% endblock %}
 </head>
@@ -20,8 +21,8 @@
                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
                     </svg>
                 </div>
-                <span class="brand-title">LearnThread</span>
-                <span class="brand-badge">Community</span>
+                <span class="brand-title">CommunityBlog</span>
+                <span class="brand-badge">Blog</span>
             </a>
 
             <ul class="nav-links">
@@ -34,9 +35,13 @@
                     {% endif %}
                     <li>
                         <a href="{% url 'accounts:profile' user.username %}" class="nav-link" style="display: flex; align-items: center; gap: 0.4rem;">
-                            <span class="author-avatar" style="width: 26px; height: 26px; font-size: 0.75rem;">
-                                {{ user.username|slice:":1"|upper }}
-                            </span>
+                            {% if user.profile_photo %}
+                                <img src="{{ user.profile_photo.url }}" alt="{{ user.username }} profile photo" style="width: 26px; height: 26px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(124, 92, 255, 0.4);">
+                            {% else %}
+                                <span class="author-avatar" style="width: 26px; height: 26px; font-size: 0.75rem;">
+                                    {{ user.username|slice:":1"|upper }}
+                                </span>
+                            {% endif %}
                             <span>@{{ user.username }}</span>
                         </a>
                     </li>
@@ -83,7 +88,7 @@
     </main>
 
     <footer class="site-footer">
-        <p><strong>LearnThread</strong> — A curated, peer-moderated community blog for learners and developers.</p>
+        <p><strong>CommunityBlog</strong> — A curated, peer-moderated community blog for learners and developers.</p>
         <p style="margin-top: 0.35rem; font-size: 0.82rem;">Clean tutorials, reliable notes, and zero spam.</p>
     </footer>
 

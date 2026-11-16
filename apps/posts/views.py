@@ -2,13 +2,21 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.utils import timezone
-from django.http import Http404
 
-from apps.posts.models import Post, PostStatus
+from apps.posts.models import Post, PostStatus, render_markdown
 from apps.posts.forms import PostForm
 from apps.moderation.models import AdminNotification, NotificationType
+
+
+@login_required
+@require_POST
+def post_preview_view(request):
+    """Return sanitized Markdown HTML for the author's live post preview."""
+    return JsonResponse({'html': render_markdown(request.POST.get('body', ''))})
 
 
 def post_list_view(request):
@@ -41,7 +49,7 @@ def post_detail_view(request, slug):
 def post_create_view(request):
     """Create a post as Draft or submit directly for review (FR-8, FR-9)."""
     if request.method == 'POST':
-        form = PostForm(request.POST)
+        form = PostForm(request.POST, request.FILES)
         action = request.POST.get('action')
         if form.is_valid():
             post = form.save(commit=False)
@@ -81,7 +89,7 @@ def post_edit_view(request, slug):
     initial_status = post.status
 
     if request.method == 'POST':
-        form = PostForm(request.POST, instance=post)
+        form = PostForm(request.POST, request.FILES, instance=post)
         action = request.POST.get('action')
         if form.is_valid():
             post = form.save(commit=False)

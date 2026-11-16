@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.validators import FileExtensionValidator
 from django.db import models
 from django.utils.text import slugify
 import markdown
@@ -12,10 +13,60 @@ class PostStatus(models.TextChoices):
     REJECTED = 'REJECTED', 'Rejected'
 
 
+class PostFont(models.TextChoices):
+    SANS = 'sans', 'CommunityBlog Sans'
+    NASTALIQ = 'nastaliq', 'Noto Nastaliq Urdu'
+    NASKH = 'naskh', 'Noto Naskh Arabic'
+
+
+class PostDirection(models.TextChoices):
+    AUTO = 'auto', 'Automatic'
+    LTR = 'ltr', 'Left to right'
+    RTL = 'rtl', 'Right to left'
+
+
+def render_markdown(body):
+    """Render Markdown to sanitized HTML for post display and previews."""
+    html = markdown.markdown(
+        body,
+        extensions=['extra', 'codehilite', 'nl2br']
+    )
+    allowed_tags = {
+        'a', 'b', 'blockquote', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+        'hr', 'i', 'li', 'ol', 'p', 'pre', 'strong', 'ul', 'br'
+    }
+    allowed_attributes = {'a': {'href', 'title'}}
+    return nh3.clean(html, tags=allowed_tags, attributes=allowed_attributes)
+
+
 class Post(models.Model):
     title = models.CharField(max_length=255)
     slug = models.SlugField(max_length=280, unique=True, blank=True)
     body = models.TextField()
+    content_font = models.CharField(
+        max_length=20,
+        choices=PostFont.choices,
+        default=PostFont.SANS
+    )
+    content_direction = models.CharField(
+        max_length=4,
+        choices=PostDirection.choices,
+        default=PostDirection.AUTO
+    )
+    image = models.FileField(
+        upload_to='posts/images/',
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png', 'gif', 'webp'])],
+        help_text='Optional image to display with your post.'
+    )
+    video = models.FileField(
+        upload_to='posts/videos/',
+        blank=True,
+        null=True,
+        validators=[FileExtensionValidator(allowed_extensions=['mp4', 'mov', 'avi', 'webm', 'm4v', 'mkv'])],
+        help_text='Optional video to embed with your post.'
+    )
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -60,14 +111,4 @@ class Post(models.Model):
 
     @property
     def rendered_body(self):
-        """Render markdown to HTML safely using nh3 to prevent XSS."""
-        html = markdown.markdown(
-            self.body,
-            extensions=['extra', 'codehilite', 'nl2br']
-        )
-        allowed_tags = {
-            'a', 'b', 'blockquote', 'code', 'em', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-            'hr', 'i', 'li', 'ol', 'p', 'pre', 'strong', 'ul', 'br'
-        }
-        allowed_attributes = {'a': {'href', 'title'}}
-        return nh3.clean(html, tags=allowed_tags, attributes=allowed_attributes)
+        return render_markdown(self.body)

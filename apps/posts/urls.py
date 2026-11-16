@@ -6,6 +6,7 @@ from apps.posts.views import (
     post_detail_view,
     post_edit_view,
     post_delete_view,
+    post_preview_view,
 )
 
 app_name = 'posts'
@@ -13,6 +14,7 @@ app_name = 'posts'
 urlpatterns = [
     path('', post_list_view, name='post_list'),
     path('write/', post_create_view, name='post_create'),
+    path('write/preview/', post_preview_view, name='post_preview'),
     path('my-posts/', my_posts_view, name='my_posts'),
     path('post/<slug:slug>/', post_detail_view, name='post_detail'),
     path('post/<slug:slug>/edit/', post_edit_view, name='post_edit'),

@@ -18,8 +18,8 @@ class UserAdmin(BaseUserAdmin):
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('-date_joined',)
     fieldsets = BaseUserAdmin.fieldsets + (
-        ('LearnThread Profile', {'fields': ('is_email_verified', 'bio')}),
+        ('CommunityBlog Profile', {'fields': ('profile_photo', 'is_email_verified', 'bio')}),
     )
     add_fieldsets = BaseUserAdmin.add_fieldsets + (
-        ('LearnThread Profile', {'fields': ('email', 'is_email_verified', 'bio')}),
+        ('CommunityBlog Profile', {'fields': ('email', 'profile_photo', 'is_email_verified', 'bio')}),
     )

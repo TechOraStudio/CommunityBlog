@@ -1,7 +1,9 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = 'django-insecure-gvjqve5s+7jug-n2t40ef#hm*i6ye4antqesqmjg$(*bak-z^p'
 
@@ -101,8 +103,24 @@ LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'posts:post_list'
 LOGOUT_REDIRECT_URL = 'posts:post_list'
 
-# Email backend (console during development)
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-DEFAULT_FROM_EMAIL = 'LearnThread <noreply@learnthread.local>'
+# Configure SMTP through the ignored .env file. Without a host, email is printed
+# to the development server terminal so local verification remains testable.
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', '587'))
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() in ('true', '1', 'yes')
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'False').lower() in ('true', '1', 'yes')
+EMAIL_TIMEOUT = 15
+EMAIL_BACKEND = os.getenv(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.smtp.EmailBackend'
+    if EMAIL_HOST else 'django.core.mail.backends.console.EmailBackend'
+)
+AUTO_VERIFY_EMAILS = DEBUG and EMAIL_BACKEND == 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL') or (
+    f'CommunityBlog <{EMAIL_HOST_USER}>'
+    if EMAIL_HOST_USER else 'CommunityBlog <noreply@communityblog.local>'
+)
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

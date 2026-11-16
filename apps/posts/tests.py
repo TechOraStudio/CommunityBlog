@@ -1,3 +1,4 @@
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -55,6 +56,65 @@ class PostsTests(TestCase):
         })
         pending = Post.objects.get(title='My Pending Tutorial')
         self.assertEqual(pending.status, PostStatus.PENDING)
+
+    def test_post_editor_shows_live_preview_and_urdu_options(self):
+        self.client.force_login(self.author1)
+
+        response = self.client.get(reverse('posts:post_create'))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'Live preview')
+        self.assertContains(response, 'Noto Nastaliq Urdu')
+        self.assertContains(response, 'Right to left')
+
+    def test_post_creation_accepts_image_and_video_uploads(self):
+        """Media uploads: authors can attach an image and a video to a post."""
+        self.client.force_login(self.author1)
+
+        image = SimpleUploadedFile('cover.png', b'fake-image-content', content_type='image/png')
+        video = SimpleUploadedFile('lesson.mp4', b'fake-video-content', content_type='video/mp4')
+
+        response = self.client.post(reverse('posts:post_create'), {
+            'title': 'Media Rich Tutorial',
+            'body': 'This post includes visuals.',
+            'action': 'draft',
+            'image': image,
+            'video': video,
+        })
+
+        self.assertEqual(response.status_code, 302)
+        post = Post.objects.get(title='Media Rich Tutorial')
+        self.assertIn('posts/images/', post.image.name)
+        self.assertIn('posts/videos/', post.video.name)
+
+    def test_post_creation_saves_font_and_text_direction(self):
+        self.client.force_login(self.author1)
+
+        self.client.post(reverse('posts:post_create'), {
+            'title': 'Urdu Tutorial',
+            'body': 'یہ ایک مثال ہے',
+            'content_font': 'nastaliq',
+            'content_direction': 'rtl',
+            'action': 'draft'
+        })
+
+        post = Post.objects.get(title='Urdu Tutorial')
+        self.assertEqual(post.content_font, 'nastaliq')
+        self.assertEqual(post.content_direction, 'rtl')
+        response = self.client.get(reverse('posts:post_detail', kwargs={'slug': post.slug}))
+        self.assertContains(response, 'post-font-nastaliq')
+        self.assertContains(response, 'dir="rtl"')
+
+    def test_live_preview_returns_sanitized_markdown(self):
+        self.client.force_login(self.author1)
+
+        response = self.client.post(reverse('posts:post_preview'), {
+            'body': '**Bold Urdu**\n\n<script>alert("unsafe")</script>'
+        })
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('<strong>Bold Urdu</strong>', response.json()['html'])
+        self.assertNotIn('<script>', response.json()['html'])
 
     def test_public_cannot_see_draft_or_pending(self):
         """FR-21, FR-22, FR-46: Public list and detail hide unapproved posts."""

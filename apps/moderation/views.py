@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
+from django.core.paginator import Paginator
 from django.utils import timezone
 from apps.accounts.models import User
 from apps.posts.models import Post, PostStatus

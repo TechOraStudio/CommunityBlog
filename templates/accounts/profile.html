@@ -1,14 +1,18 @@
 {% extends 'base.html' %}
 
-{% block title %}@{{ profile_user.username }} — LearnThread{% endblock %}
+{% block title %}@{{ profile_user.username }} — CommunityBlog{% endblock %}
 
 {% block content %}
 <div class="card" style="padding: 2.5rem; margin-bottom: 2.5rem;">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
         <div style="display: flex; gap: 1.25rem; align-items: center;">
-            <div class="author-avatar" style="width: 72px; height: 72px; font-size: 1.8rem;">
-                {{ profile_user.username|slice:":1"|upper }}
-            </div>
+            {% if profile_user.profile_photo %}
+                <img src="{{ profile_user.profile_photo.url }}" alt="{{ profile_user.username }} profile photo" style="width: 72px; height: 72px; object-fit: cover; border-radius: 50%; border: 2px solid rgba(124, 92, 255, 0.5); box-shadow: 0 12px 22px rgba(124, 92, 255, 0.12);">
+            {% else %}
+                <div class="author-avatar" style="width: 72px; height: 72px; font-size: 1.8rem;">
+                    {{ profile_user.username|slice:":1"|upper }}
+                </div>
+            {% endif %}
             <div>
                 <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">
                     {% if profile_user.first_name or profile_user.last_name %}

@@ -1,52 +1,120 @@
 {% extends 'base.html' %}
 
-{% block title %}LearnThread — Discover Curated Learning Notes & Tutorials{% endblock %}
+{% block title %}CommunityBlog — Curated Learning Notes & Tutorials{% endblock %}
 
 {% block content %}
-<section class="hero-section">
-    <div class="hero-pill">
-        <span>✨</span> The Curated Platform for Technical Notes & Tutorials
-    </div>
-    <h1 class="hero-title">
-        Learn in public. Share what works. <span class="gradient-text">Build your legacy.</span>
-    </h1>
-    <p class="hero-desc">
-        A spam-free developer community where every post is peer-moderated for accuracy, clarity, and quality before going public.
-    </p>
+<section class="hero-section hero-fresh">
+    <div class="hero-layout">
+        <div class="hero-copy">
+            <div class="hero-pill">
+                <span>⚡</span> Learn with real-world insight
+            </div>
+            <h1 class="hero-title">
+                Build momentum with a <span class="gradient-text">smarter community.</span>
+            </h1>
+            <p class="hero-desc">
+                Explore curated lessons, product notes, and practical knowledge from creators who share what actually works.
+            </p>
 
-    <div class="hero-actions">
-        {% if not user.is_authenticated %}
-            <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Join the Community</a>
-            <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg">Sign In</a>
-        {% else %}
-            <a href="{% url 'posts:post_create' %}" class="btn btn-primary btn-lg">+ Write a Tutorial</a>
-            <a href="{% url 'posts:my_posts' %}" class="btn btn-outline btn-lg">View My Articles</a>
-        {% endif %}
+            <div class="hero-actions">
+                {% if not user.is_authenticated %}
+                    <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg">Join the Community</a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg">Sign In</a>
+                {% else %}
+                    <a href="{% url 'posts:post_create' %}" class="btn btn-primary btn-lg">+ Publish a Post</a>
+                    <a href="{% url 'posts:my_posts' %}" class="btn btn-outline btn-lg">My Articles</a>
+                {% endif %}
+            </div>
+
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">3.4k+</div>
+                    <div class="stat-label">Active learners</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">250+</div>
+                    <div class="stat-label">Curated posts</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Quality focus</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="visual-panel">
+                <div class="visual-header">
+                    <span class="dot dot-green"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-red"></span>
+                    <span class="panel-label">CommunityBlog</span>
+                </div>
+
+                <div class="mini-card main-feature">
+                    <div class="mini-tag">Featured</div>
+                    <h3>Turn ideas into momentum</h3>
+                    <p>Share tutorials, case studies, and expert notes that help people learn faster.</p>
+                </div>
+
+                <div class="mini-grid">
+                    <div class="mini-card small-card">
+                        <span class="mini-label">New</span>
+                        <strong>Design Systems</strong>
+                        <small>12 resources</small>
+                    </div>
+                    <div class="mini-card small-card accent-card">
+                        <span class="mini-label">Popular</span>
+                        <strong>AI Workflow</strong>
+                        <small>8 lessons</small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="hero-stats">
-        <div class="stat-item">
-            <div class="stat-number">100%</div>
-            <div class="stat-label">Peer Moderated</div>
+    <div class="logo-row">
+        <span>Trusted by modern builders</span>
+        <div class="logo-track">
+            <span>GitHub</span>
+            <span>Notion</span>
+            <span>Figma</span>
+            <span>Vercel</span>
+            <span>React</span>
         </div>
-        <div class="stat-item">
-            <div class="stat-number">Markdown</div>
-            <div class="stat-label">Code Ready</div>
+    </div>
+</section>
+
+<section class="feature-section">
+    <div class="section-heading">
+        <span class="eyebrow">Why CommunityBlog</span>
+        <h2>Built for clarity, trust, and growth.</h2>
+    </div>
+
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">✔</div>
+            <h3>Peer reviewed</h3>
+            <p>Every post is reviewed for quality, usefulness, and clarity before it reaches the public library.</p>
         </div>
-        <div class="stat-item">
-            <div class="stat-number">Zero</div>
-            <div class="stat-label">Spam Tolerance</div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Fast learning</h3>
+            <p>Discover smart, actionable insights with content built for focus and practical understanding.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🎯</div>
+            <h3>Creator first</h3>
+            <p>Publish in a clean environment designed to help ideas spread without noise or spam.</p>
         </div>
     </div>
 </section>
 
 <div class="posts-section">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div class="section-heading inline-heading">
         <div>
-            <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">
-                Featured & Approved Articles
-            </h2>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Curated learning notes reviewed by platform moderators.</p>
+            <span class="eyebrow">Featured Reads</span>
+            <h2>Approved articles from the community</h2>
         </div>
     </div>
 
@@ -55,9 +123,13 @@
             {% for post in page_obj.object_list %}
                 <article class="post-card">
                     <div class="post-card-header">
-                        <div class="author-avatar">
-                            {{ post.author.username|slice:":1"|upper }}
-                        </div>
+                        {% if post.author.profile_photo %}
+                            <img src="{{ post.author.profile_photo.url }}" alt="{{ post.author.username }} profile photo" style="width: 36px; height: 36px; object-fit: cover; border-radius: 50%; border: 1px solid rgba(124, 92, 255, 0.3);">
+                        {% else %}
+                            <div class="author-avatar">
+                                {{ post.author.username|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
                         <div class="author-info">
                             <span class="author-name">
                                 <a href="{% url 'accounts:profile' post.author.username %}">@{{ post.author.username }}</a>

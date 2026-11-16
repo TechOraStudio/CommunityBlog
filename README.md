@@ -1,11 +1,11 @@
-# LearnThread 🧵
+# CommunityBlog
 
 A moderated community blog website where learners and developers share tutorials, study notes, and technical articles.
 
 ---
 
 ## 🎯 Key Concept & Workflow
-Unlike traditional open blogs where spam and unchecked content proliferate, **LearnThread** enforces a quality-moderated publishing workflow:
+Unlike traditional open blogs where spam and unchecked content proliferate, **CommunityBlog** enforces a quality-moderated publishing workflow:
 1. **Drafting**: Authors write tutorials in Markdown and save them as Drafts.
 2. **Review Queue**: Submitting a post marks it as **Pending Review**.
 3. **Admin Moderation**:
@@ -47,6 +47,15 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 Visit **http://127.0.0.1:8000/** in your browser.
+
+### 5. Configure Verification Email
+Without SMTP settings, local development automatically verifies accounts so you can sign in. To require email verification and deliver links to inboxes, copy `.env.example` to `.env` and set your email provider's SMTP values. For Gmail, use a Google App Password (not your account password). Never commit `.env`.
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Restart the server after editing `.env`. Existing unverified accounts can request a new link from **Resend verification email** on the sign-in page.
 
 ---
 
