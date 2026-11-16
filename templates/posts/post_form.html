@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 860px; margin: 0 auto;">
+    <h2 style="margin-bottom: 1.5rem; color: var(--primary);">{{ title }}</h2>
+
+    {% if post and post.status == 'REJECTED' and post.rejection_reason %}
+        <div class="alert alert-warning">
+            <strong>Rejection Reason from Admin:</strong> {{ post.rejection_reason }}
+            <p style="margin-top: 0.35rem; font-size: 0.85rem;">You can update your content below and click "Submit for Review" to resubmit it for moderation.</p>
+        </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.title.id_for_label }}">Post Title</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <div class="form-error">{{ form.title.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.body.id_for_label }}">Content (Markdown Supported)</label>
+            {{ form.body }}
+            <div class="form-help">
+                Supports Markdown: <code>**bold**</code>, <code>*italic*</code>, <code># Heading</code>, <code>`code`</code>, <code>```code block```</code>, <code>- bullet list</code>.
+            </div>
+            {% if form.body.errors %}
+                <div class="form-error">{{ form.body.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <div style="display: flex; gap: 0.75rem; margin-top: 2rem;">
+            {% if post and post.status == 'APPROVED' %}
+                <button type="submit" name="action" value="submit" class="btn btn-primary">Save Changes</button>
+            {% else %}
+                <button type="submit" name="action" value="submit" class="btn btn-primary">🚀 Submit for Review</button>
+                <button type="submit" name="action" value="draft" class="btn btn-outline">💾 Save as Draft</button>
+            {% endif %}
+            <a href="{% url 'posts:my_posts' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

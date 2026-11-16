@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 1.8rem; color: var(--primary);">User Management</h1>
+        <p style="color: var(--text-muted);">View community members and deactivate or reactivate accounts (FR-20).</p>
+    </div>
+    <a href="{% url 'moderation:dashboard' %}" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Verified</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in users %}
+                    <tr>
+                        <td>
+                            <strong><a href="{% url 'accounts:profile' member.username %}">@{{ member.username }}</a></strong>
+                        </td>
+                        <td>{{ member.email }}</td>
+                        <td>
+                            {% if member.is_email_verified %}
+                                <span class="badge badge-approved">Verified</span>
+                            {% else %}
+                                <span class="badge badge-pending">Unverified</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if member.is_superuser %}
+                                <span class="badge badge-edited">Superadmin</span>
+                            {% elif member.is_staff %}
+                                <span class="badge badge-approved">Moderator</span>
+                            {% else %}
+                                <span class="badge badge-draft">Learner</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if member.is_active %}
+                                <span style="color: var(--success); font-weight: 600;">Active</span>
+                            {% else %}
+                                <span style="color: var(--danger); font-weight: 600;">Deactivated</span>
+                            {% endif %}
+                        </td>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">
+                            {{ member.date_joined|date:"M d, Y" }}
+                        </td>
+                        <td>
+                            {% if member != user %}
+                                <a href="{% url 'moderation:toggle_user_active' member.pk %}" class="btn {% if member.is_active %}btn-outline{% else %}btn-success{% endif %} btn-sm" onclick="return confirm('Are you sure you want to {% if member.is_active %}deactivate{% else %}activate{% endif %} this user?');">
+                                    {% if member.is_active %}Deactivate{% else %}Activate{% endif %}
+                                </a>
+                            {% else %}
+                                <span style="font-size: 0.8rem; color: var(--text-muted);">Current User</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

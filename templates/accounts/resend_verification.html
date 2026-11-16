@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Resend Verification Email{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2 style="margin-bottom: 0.5rem; text-align: center; color: var(--primary);">Resend Verification Email</h2>
+    <p style="text-align: center; color: var(--text-muted); margin-bottom: 1.5rem; font-size: 0.9rem;">
+        Enter your registered email address and we'll send a fresh confirmation link.
+    </p>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="id_email">Email Address</label>
+            <input type="email" name="email" id="id_email" class="form-input" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; padding: 0.75rem;">Send Verification Link</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.5rem; font-size: 0.9rem;">
+        <a href="{% url 'accounts:login' %}">← Back to Login</a>
+    </p>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}My Posts Dashboard{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h1 style="font-size: 1.8rem; color: var(--primary);">My Articles & Notes</h1>
+    <a href="{% url 'posts:post_create' %}" class="btn btn-accent">+ New Post</a>
+</div>
+
+<!-- Status Filters -->
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <a href="{% url 'posts:my_posts' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+    <a href="{% url 'posts:my_posts' %}?status=APPROVED" class="btn btn-sm {% if status_filter == 'APPROVED' %}btn-primary{% else %}btn-outline{% endif %}">Approved</a>
+    <a href="{% url 'posts:my_posts' %}?status=PENDING" class="btn btn-sm {% if status_filter == 'PENDING' %}btn-primary{% else %}btn-outline{% endif %}">Pending Review</a>
+    <a href="{% url 'posts:my_posts' %}?status=DRAFT" class="btn btn-sm {% if status_filter == 'DRAFT' %}btn-primary{% else %}btn-outline{% endif %}">Drafts</a>
+    <a href="{% url 'posts:my_posts' %}?status=REJECTED" class="btn btn-sm {% if status_filter == 'REJECTED' %}btn-primary{% else %}btn-outline{% endif %}">Rejected</a>
+</div>
+
+{% if posts %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                        <tr>
+                            <td>
+                                <strong style="font-size: 1rem;">
+                                    <a href="{% url 'posts:post_detail' post.slug %}">{{ post.title }}</a>
+                                </strong>
+                                {% if post.status == 'REJECTED' and post.rejection_reason %}
+                                    <div style="margin-top: 0.35rem; font-size: 0.85rem; color: var(--danger);">
+                                        <strong>Reason:</strong> {{ post.rejection_reason }}
+                                    </div>
+                                {% endif %}
+                                {% if post.is_edited_after_approval %}
+                                    <span class="badge badge-edited" style="margin-left: 0.5rem;">Edited</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if post.status == 'APPROVED' %}
+                                    <span class="badge badge-approved">Approved</span>
+                                {% elif post.status == 'PENDING' %}
+                                    <span class="badge badge-pending">Pending</span>
+                                {% elif post.status == 'DRAFT' %}
+                                    <span class="badge badge-draft">Draft</span>
+                                {% elif post.status == 'REJECTED' %}
+                                    <span class="badge badge-rejected">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                {{ post.created_at|date:"M d, Y" }}
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.4rem;">
+                                    <a href="{% url 'posts:post_edit' post.slug %}" class="btn btn-outline btn-sm">Edit</a>
+                                    <a href="{% url 'posts:post_delete' post.slug %}" class="btn btn-outline btn-sm" style="color: var(--danger);">Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+        <p style="color: var(--text-muted); font-size: 1.1rem; margin-bottom: 1rem;">No posts found under this filter.</p>
+        <a href="{% url 'posts:post_create' %}" class="btn btn-primary">Create Your First Post</a>
+    </div>
+{% endif %}
+{% endblock %}

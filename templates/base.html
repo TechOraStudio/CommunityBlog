@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}LearnThread{% endblock %} | Moderated Community Blog</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <header class="site-header">
+        <nav class="navbar">
+            <a href="{% url 'posts:post_list' %}" class="brand-logo">
+                <span>LearnThread</span>
+                <span class="brand-badge">Community</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="{% url 'posts:post_list' %}" class="nav-link">Browse</a></li>
+                {% if user.is_authenticated %}
+                    <li><a href="{% url 'posts:post_create' %}" class="btn btn-accent btn-sm">+ Write Post</a></li>
+                    <li><a href="{% url 'posts:my_posts' %}" class="nav-link">My Posts</a></li>
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'moderation:dashboard' %}" class="nav-link admin-link">🛡️ Moderation</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'accounts:profile' user.username %}" class="nav-link">@{{ user.username }}</a></li>
+                    <li>
+                        <form action="{% url 'accounts:logout' %}" method="post" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline btn-sm">Log Out</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'accounts:login' %}" class="nav-link">Log In</a></li>
+                    <li><a href="{% url 'accounts:register' %}" class="btn btn-primary btn-sm">Join LearnThread</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main class="main-container">
+        {% if messages %}
+            <div class="messages-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+        <p><strong>LearnThread</strong> — A moderated community blog for learners and developers.</p>
+        <p style="margin-top: 0.35rem; font-size: 0.82rem;">Clean, verified knowledge notes and tutorials.</p>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

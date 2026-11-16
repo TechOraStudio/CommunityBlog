@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Account{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 550px; margin: 2rem auto; text-align: center;">
+    <h2 style="color: var(--danger); margin-bottom: 1rem;">Delete Your Account?</h2>
+    <div class="alert alert-danger" style="text-align: left; margin-bottom: 1.5rem;">
+        <strong>Warning:</strong> Deleting your account is permanent. All your articles (drafts, pending, and approved), profile information, and activity will be permanently removed.
+    </div>
+
+    <form method="post" style="display: flex; justify-content: center; gap: 1rem;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, Permanently Delete My Account</button>
+        <a href="{% url 'accounts:profile' user.username %}" class="btn btn-outline">Cancel</a>
+    </form>
+</div>
+{% endblock %}

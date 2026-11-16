@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }}{% endblock %}
+
+{% block content %}
+<article class="article-container">
+    <header class="article-header">
+        <h1 class="article-title">{{ post.title }}</h1>
+        <div class="post-meta">
+            <span>By <a href="{% url 'accounts:profile' post.author.username %}"><strong>@{{ post.author.username }}</strong></a></span>
+            <span>•</span>
+            <time datetime="{{ post.created_at|date:'c' }}">Published {{ post.created_at|date:"F j, Y" }}</time>
+            <span>•</span>
+            {% if post.status == 'APPROVED' %}
+                <span class="badge badge-approved">Approved</span>
+            {% elif post.status == 'PENDING' %}
+                <span class="badge badge-pending">Pending Review</span>
+            {% elif post.status == 'DRAFT' %}
+                <span class="badge badge-draft">Draft</span>
+            {% elif post.status == 'REJECTED' %}
+                <span class="badge badge-rejected">Rejected</span>
+            {% endif %}
+
+            {% if post.is_edited_after_approval %}
+                <span class="badge badge-edited">Edited after approval</span>
+            {% endif %}
+        </div>
+
+        {% if post.status == 'REJECTED' and post.rejection_reason %}
+            <div class="alert alert-warning" style="margin-top: 1rem;">
+                <div>
+                    <strong>Admin Rejection Reason:</strong> {{ post.rejection_reason }}
+                </div>
+            </div>
+        {% endif %}
+
+        {% if user == post.author or user.is_staff %}
+            <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                {% if user == post.author %}
+                    <a href="{% url 'posts:post_edit' post.slug %}" class="btn btn-outline btn-sm">✏️ Edit Post</a>
+                {% endif %}
+                <a href="{% url 'posts:post_delete' post.slug %}" class="btn btn-outline btn-sm" style="color: var(--danger);">🗑️ Delete</a>
+                {% if user.is_staff and post.status == 'PENDING' %}
+                    <a href="{% url 'moderation:review_post' post.slug %}" class="btn btn-accent btn-sm">🛡️ Moderate</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    </header>
+
+    <div class="article-content">
+        {{ post.rendered_body|safe }}
+    </div>
+
+    <div style="margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <a href="{% url 'posts:post_list' %}" class="btn btn-outline btn-sm">← Back to all posts</a>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Author: @{{ post.author.username }}</span>
+    </div>
+</article>
+{% endblock %}

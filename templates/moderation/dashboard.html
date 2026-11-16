@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Moderation Dashboard{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; color: var(--primary);">🛡️ Moderation & Editorial Panel</h1>
+    <p style="color: var(--text-muted);">Manage post review queues, post updates, and community activity.</p>
+</div>
+
+<!-- Quick Stats Cards -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+    <div class="card" style="margin-bottom: 0;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Pending Posts</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--warning); margin: 0.5rem 0;">{{ pending_count }}</div>
+        <a href="{% url 'moderation:pending_posts' %}" class="btn btn-outline btn-sm">Review Queue →</a>
+    </div>
+
+    <div class="card" style="margin-bottom: 0;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Recently Edited</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: #7c3aed; margin: 0.5rem 0;">{{ edited_count }}</div>
+        <a href="{% url 'moderation:recently_edited' %}" class="btn btn-outline btn-sm">Inspect Edits →</a>
+    </div>
+
+    <div class="card" style="margin-bottom: 0;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Unread Alerts</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--accent); margin: 0.5rem 0;">{{ unread_notifications }}</div>
+        <a href="{% url 'moderation:notifications' %}" class="btn btn-outline btn-sm">View Notifications →</a>
+    </div>
+
+    <div class="card" style="margin-bottom: 0;">
+        <div style="font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Community Users</div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--primary); margin: 0.5rem 0;">{{ users_count }}</div>
+        <a href="{% url 'moderation:users' %}" class="btn btn-outline btn-sm">Manage Users →</a>
+    </div>
+</div>
+
+<!-- Pending Reviews -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.3rem; color: var(--primary);">Pending Posts Waiting for Review</h2>
+        <a href="{% url 'moderation:pending_posts' %}" style="font-size: 0.85rem;">View all pending ({{ pending_count }})</a>
+    </div>
+
+    {% if recent_pending %}
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in recent_pending %}
+                        <tr>
+                            <td><strong>{{ post.title }}</strong></td>
+                            <td>@{{ post.author.username }}</td>
+                            <td style="color: var(--text-muted);">{{ post.created_at|timesince }} ago</td>
+                            <td>
+                                <a href="{% url 'moderation:review_post' post.slug %}" class="btn btn-accent btn-sm">Review Now</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted); padding: 1.5rem 0; text-align: center;">🎉 No pending posts right now! The queue is empty.</p>
+    {% endif %}
+</div>
+
+<!-- Recent Notifications -->
+<div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+        <h2 style="font-size: 1.3rem; color: var(--primary);">Audit & System Notifications</h2>
+        <a href="{% url 'moderation:notifications' %}" style="font-size: 0.85rem;">View all log entries</a>
+    </div>
+
+    {% if recent_notifications %}
+        <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem;">
+            {% for item in recent_notifications %}
+                <li style="padding: 0.75rem; background: #f8fafc; border: 1px solid var(--border); border-radius: var(--radius); display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="badge {% if item.is_read %}badge-draft{% else %}badge-pending{% endif %}">
+                            {{ item.get_notification_type_display }}
+                        </span>
+                        <span style="margin-left: 0.5rem; font-size: 0.95rem;">{{ item.message }}</span>
+                    </div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">{{ item.created_at|timesince }} ago</span>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p style="color: var(--text-muted); text-align: center; padding: 1rem;">No recent notifications recorded.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Audit & Notification Log{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 1.8rem; color: var(--primary);">Admin Notification Log</h1>
+        <p style="color: var(--text-muted);">Audit log for critical events: post edits after approval, deleted accounts, and review requests.</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <a href="{% url 'moderation:mark_all_notifications_read' %}" class="btn btn-outline btn-sm">Mark All as Read</a>
+        <a href="{% url 'moderation:dashboard' %}" class="btn btn-outline btn-sm">← Dashboard</a>
+    </div>
+</div>
+
+{% if page_obj.object_list %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Event Type</th>
+                        <th>Message</th>
+                        <th>User / Actor</th>
+                        <th>Timestamp</th>
+                        <th>Status / Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in page_obj.object_list %}
+                        <tr style="{% if not item.is_read %}background: #f0fdf4; font-weight: 500;{% endif %}">
+                            <td>
+                                <span class="badge {% if item.notification_type == 'POST_EDITED' %}badge-edited{% elif item.notification_type == 'ACCOUNT_DELETED' %}badge-rejected{% else %}badge-pending{% endif %}">
+                                    {{ item.get_notification_type_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ item.message }}
+                                {% if item.post %}
+                                    <div style="font-size: 0.8rem; margin-top: 0.2rem;">
+                                        <a href="{% url 'posts:post_detail' item.post.slug %}">View Post →</a>
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td>@{{ item.actor_username|default:"System" }}</td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                {{ item.created_at|date:"M d, Y H:i:s" }}
+                            </td>
+                            <td>
+                                {% if not item.is_read %}
+                                    <a href="{% url 'moderation:mark_notification_read' item.pk %}" class="btn btn-outline btn-sm">Mark as Read</a>
+                                {% else %}
+                                    <span style="font-size: 0.8rem; color: var(--text-muted);">Read</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+        <nav class="pagination" aria-label="Page navigation">
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-outline btn-sm">← Previous</a>
+            {% endif %}
+            <span class="page-info">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn btn-outline btn-sm">Next →</a>
+            {% endif %}
+        </nav>
+    {% endif %}
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+        <p style="color: var(--text-muted); font-size: 1.1rem;">No notification log entries recorded.</p>
+    </div>
+{% endif %}
+{% endblock %}

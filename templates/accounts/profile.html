@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}@{{ profile_user.username }}{% endblock %}
+
+{% block content %}
+<div class="card" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; color: var(--primary);">
+                {% if profile_user.first_name or profile_user.last_name %}
+                    {{ profile_user.first_name }} {{ profile_user.last_name }}
+                {% else %}
+                    @{{ profile_user.username }}
+                {% endif %}
+            </h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
+                @{{ profile_user.username }} • Member since {{ profile_user.date_joined|date:"F Y" }}
+            </p>
+            {% if profile_user.bio %}
+                <p style="margin-top: 1rem; font-size: 1.05rem; line-height: 1.6; color: #334155;">
+                    {{ profile_user.bio|linebreaksbr }}
+                </p>
+            {% else %}
+                <p style="margin-top: 0.75rem; color: var(--text-muted); font-style: italic;">No bio written yet.</p>
+            {% endif %}
+        </div>
+
+        {% if user == profile_user %}
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline btn-sm">Edit Profile</a>
+                <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline btn-sm" style="color: var(--danger);">Delete Account</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<h2 style="font-size: 1.4rem; color: var(--primary); margin-bottom: 1.25rem;">
+    Published Articles by @{{ profile_user.username }} ({{ posts.count }})
+</h2>
+
+{% if posts %}
+    <div class="posts-grid">
+        {% for post in posts %}
+            <article class="post-card">
+                <h3 class="post-card-title">
+                    <a href="{% url 'posts:post_detail' post.slug %}">{{ post.title }}</a>
+                </h3>
+                <div class="post-meta">
+                    <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M d, Y" }}</time>
+                </div>
+                <div class="post-excerpt">
+                    {{ post.body|truncatewords:40 }}
+                </div>
+                <a href="{% url 'posts:post_detail' post.slug %}" class="btn btn-outline btn-sm">Read Post →</a>
+            </article>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+        No published articles yet.
+    </div>
+{% endif %}
+{% endblock %}

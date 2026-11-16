@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Review: {{ post.title }}{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+        <h1 style="font-size: 1.8rem; color: var(--primary);">Moderate Post</h1>
+        <p style="color: var(--text-muted);">Decide whether this submission meets community guidelines.</p>
+    </div>
+    <a href="{% url 'moderation:pending_posts' %}" class="btn btn-outline btn-sm">← Back to Queue</a>
+</div>
+
+<article class="article-container" style="margin-bottom: 2rem;">
+    <header class="article-header">
+        <h2 class="article-title">{{ post.title }}</h2>
+        <div class="post-meta">
+            <span>Author: <a href="{% url 'accounts:profile' post.author.username %}"><strong>@{{ post.author.username }}</strong></a></span>
+            <span>•</span>
+            <span>Submitted: {{ post.created_at|date:"F j, Y H:i" }}</span>
+            <span>•</span>
+            <span class="badge badge-pending">{{ post.get_status_display }}</span>
+        </div>
+    </header>
+
+    <div class="article-content">
+        {{ post.rendered_body|safe }}
+    </div>
+</article>
+
+<!-- Decision Card -->
+<div class="card" style="border: 2px solid #cbd5e1; background: #ffffff;">
+    <h3 style="margin-bottom: 1rem; color: var(--primary);">Editorial Decision</h3>
+
+    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+        <!-- Approve Form -->
+        <form method="post" style="flex: 1; min-width: 250px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.25rem; border-radius: var(--radius);">
+            {% csrf_token %}
+            <h4 style="color: #166534; margin-bottom: 0.5rem;">Option 1: Approve Post</h4>
+            <p style="font-size: 0.85rem; color: #15803d; margin-bottom: 1rem;">
+                The post will become publicly visible immediately to all visitors and learners.
+            </p>
+            <button type="submit" name="action" value="approve" class="btn btn-success" style="width: 100%;">
+                ✓ Approve & Publish Now
+            </button>
+        </form>
+
+        <!-- Reject Form -->
+        <form method="post" style="flex: 1; min-width: 280px; background: #fff1f2; border: 1px solid #fecdd3; padding: 1.25rem; border-radius: var(--radius);">
+            {% csrf_token %}
+            <h4 style="color: #9f1239; margin-bottom: 0.5rem;">Option 2: Reject with Feedback</h4>
+            <p style="font-size: 0.85rem; color: #be123c; margin-bottom: 0.75rem;">
+                A reason is mandatory (BR-5). The author will see this feedback and can edit & resubmit.
+            </p>
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+                <textarea name="rejection_reason" rows="3" class="form-textarea" placeholder="Explain what needs improvement (e.g., formatting, unclear code example, spam)..." required></textarea>
+            </div>
+            <button type="submit" name="action" value="reject" class="btn btn-danger" style="width: 100%;">
+                ✕ Reject Post with Reason
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

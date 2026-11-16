@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}Pending Posts Queue{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div>
+        <h1 style="font-size: 1.8rem; color: var(--primary);">Pending Review Queue</h1>
+        <p style="color: var(--text-muted);">Posts submitted by authors waiting for moderation before going public.</p>
+    </div>
+    <a href="{% url 'moderation:dashboard' %}" class="btn btn-outline btn-sm">← Back to Dashboard</a>
+</div>
+
+{% if posts %}
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Submitted At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for post in posts %}
+                        <tr>
+                            <td>
+                                <strong style="font-size: 1rem;">{{ post.title }}</strong>
+                                <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">
+                                    {{ post.body|truncatewords:20 }}
+                                </div>
+                            </td>
+                            <td>
+                                <a href="{% url 'accounts:profile' post.author.username %}">@{{ post.author.username }}</a>
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">
+                                {{ post.created_at|date:"M d, Y H:i" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'moderation:review_post' post.slug %}" class="btn btn-accent btn-sm">Review & Decide</a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 3rem 1rem;">
+        <p style="font-size: 1.1rem; color: var(--text-muted);">No posts currently pending moderation.</p>
+        <p style="margin-top: 0.5rem;"><a href="{% url 'moderation:dashboard' %}" class="btn btn-primary btn-sm">Go to Dashboard</a></p>
+    </div>
+{% endif %}
+{% endblock %}
