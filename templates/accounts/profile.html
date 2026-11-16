@@ -1,62 +1,81 @@
 {% extends 'base.html' %}
 
-{% block title %}@{{ profile_user.username }}{% endblock %}
+{% block title %}@{{ profile_user.username }} — LearnThread{% endblock %}
 
 {% block content %}
-<div class="card" style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
-        <div>
-            <h1 style="font-size: 2rem; color: var(--primary);">
-                {% if profile_user.first_name or profile_user.last_name %}
-                    {{ profile_user.first_name }} {{ profile_user.last_name }}
-                {% else %}
-                    @{{ profile_user.username }}
-                {% endif %}
-            </h1>
-            <p style="color: var(--text-muted); font-size: 0.95rem; margin-top: 0.25rem;">
-                @{{ profile_user.username }} • Member since {{ profile_user.date_joined|date:"F Y" }}
-            </p>
-            {% if profile_user.bio %}
-                <p style="margin-top: 1rem; font-size: 1.05rem; line-height: 1.6; color: #334155;">
-                    {{ profile_user.bio|linebreaksbr }}
-                </p>
-            {% else %}
-                <p style="margin-top: 0.75rem; color: var(--text-muted); font-style: italic;">No bio written yet.</p>
-            {% endif %}
+<div class="card" style="padding: 2.5rem; margin-bottom: 2.5rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.5rem;">
+        <div style="display: flex; gap: 1.25rem; align-items: center;">
+            <div class="author-avatar" style="width: 72px; height: 72px; font-size: 1.8rem;">
+                {{ profile_user.username|slice:":1"|upper }}
+            </div>
+            <div>
+                <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">
+                    {% if profile_user.first_name or profile_user.last_name %}
+                        {{ profile_user.first_name }} {{ profile_user.last_name }}
+                    {% else %}
+                        @{{ profile_user.username }}
+                    {% endif %}
+                </h1>
+                <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 0.25rem;">
+                    <span style="color: var(--text-muted); font-size: 0.95rem; font-weight: 600;">@{{ profile_user.username }}</span>
+                    <span style="color: #cbd5e1;">•</span>
+                    <span style="color: var(--text-muted); font-size: 0.88rem;">Member since {{ profile_user.date_joined|date:"F Y" }}</span>
+                    {% if profile_user.is_staff %}
+                        <span class="badge badge-edited">Moderator</span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
 
         {% if user == profile_user %}
-            <div style="display: flex; gap: 0.5rem;">
+            <div style="display: flex; gap: 0.65rem;">
                 <a href="{% url 'accounts:profile_edit' %}" class="btn btn-outline btn-sm">Edit Profile</a>
-                <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline btn-sm" style="color: var(--danger);">Delete Account</a>
+                <a href="{% url 'accounts:delete_account' %}" class="btn btn-outline btn-sm" style="color: var(--danger); border-color: var(--danger-border);">Delete Account</a>
             </div>
         {% endif %}
     </div>
+
+    {% if profile_user.bio %}
+        <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid var(--border); font-size: 1.05rem; line-height: 1.7; color: var(--text-secondary);">
+            {{ profile_user.bio|linebreaksbr }}
+        </div>
+    {% endif %}
 </div>
 
-<h2 style="font-size: 1.4rem; color: var(--primary); margin-bottom: 1.25rem;">
-    Published Articles by @{{ profile_user.username }} ({{ posts.count }})
-</h2>
+<div style="margin-bottom: 1.5rem;">
+    <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em;">
+        Published Articles ({{ posts.count }})
+    </h2>
+</div>
 
 {% if posts %}
     <div class="posts-grid">
         {% for post in posts %}
             <article class="post-card">
+                <div class="post-card-header">
+                    <span class="badge badge-approved">Approved</span>
+                    <span style="color: var(--text-muted); font-size: 0.82rem; margin-left: auto;">
+                        {{ post.created_at|date:"M d, Y" }}
+                    </span>
+                </div>
                 <h3 class="post-card-title">
                     <a href="{% url 'posts:post_detail' post.slug %}">{{ post.title }}</a>
                 </h3>
-                <div class="post-meta">
-                    <time datetime="{{ post.created_at|date:'c' }}">{{ post.created_at|date:"M d, Y" }}</time>
-                </div>
                 <div class="post-excerpt">
-                    {{ post.body|truncatewords:40 }}
+                    {{ post.body|truncatewords:35 }}
                 </div>
-                <a href="{% url 'posts:post_detail' post.slug %}" class="btn btn-outline btn-sm">Read Post →</a>
+                <div class="post-card-footer">
+                    <a href="{% url 'posts:post_detail' post.slug %}" class="read-more-link">
+                        <span>Read Full Post</span>
+                        <span>→</span>
+                    </a>
+                </div>
             </article>
         {% endfor %}
     </div>
 {% else %}
-    <div class="card" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+    <div class="card" style="text-align: center; padding: 3rem 1.5rem; color: var(--text-muted);">
         No published articles yet.
     </div>
 {% endif %}
