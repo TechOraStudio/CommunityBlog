@@ -1,10 +1,9 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
+
+from apps.accounts.models import User
 from apps.posts.models import Post, PostStatus
 from apps.moderation.models import AdminNotification
-
-User = get_user_model()
 
 
 class PostsTests(TestCase):

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import AdminNotification
+from apps.moderation.models import AdminNotification
 
 
 @admin.register(AdminNotification)

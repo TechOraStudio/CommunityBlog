@@ -6,8 +6,8 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import Http404
 
-from .models import Post, PostStatus
-from .forms import PostForm
+from apps.posts.models import Post, PostStatus
+from apps.posts.forms import PostForm
 from apps.moderation.models import AdminNotification, NotificationType
 
 

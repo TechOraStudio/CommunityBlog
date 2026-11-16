@@ -2,13 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
 from django.contrib import messages
 from django.utils import timezone
-from django.contrib.auth import get_user_model
-from django.core.paginator import Paginator
-
+from apps.accounts.models import User
 from apps.posts.models import Post, PostStatus
-from .models import AdminNotification, NotificationType
-
-User = get_user_model()
+from apps.moderation.models import AdminNotification, NotificationType
 
 
 def admin_check(user):

@@ -1,9 +1,8 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-from apps.posts.models import Post, PostStatus
 
-User = get_user_model()
+from apps.accounts.models import User
+from apps.posts.models import Post, PostStatus
 
 
 class ModerationTests(TestCase):
