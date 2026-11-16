@@ -26,7 +26,8 @@ class RegisterForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         super().confirm_login_allowed(user)
-        if not user.is_email_verified:
+        # Superusers and staff bypass email verification
+        if not user.is_email_verified and not (user.is_superuser or user.is_staff):
             raise ValidationError(
                 'Your email address is not verified yet. Please check your inbox or request a new verification email.',
                 code='unverified_email'
