@@ -1,11 +1,10 @@
 from django.test import TestCase, Client
 from django.urls import reverse
-from django.contrib.auth import get_user_model
-from apps.accounts.tokens import email_verification_token
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
-User = get_user_model()
+from apps.accounts.models import User
+from apps.accounts.tokens import email_verification_token
 
 
 class AccountsTests(TestCase):

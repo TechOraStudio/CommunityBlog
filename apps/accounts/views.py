@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -8,13 +8,15 @@ from django.core.mail import send_mail
 from django.urls import reverse
 from django.conf import settings
 
-from .models import User
-from .forms import RegisterForm, LoginForm, ProfileForm, ResendVerificationForm
-from .tokens import email_verification_token
+from apps.accounts.models import User
+from apps.accounts.forms import RegisterForm, LoginForm, ProfileForm, ResendVerificationForm
+from apps.accounts.tokens import email_verification_token
 from apps.moderation.models import AdminNotification, NotificationType
+from apps.posts.models import PostStatus
 
 
 def send_verification_email(request, user):
+    """Generate email verification link and send email to user."""
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = email_verification_token.make_token(user)
     verify_url = request.build_absolute_uri(
@@ -23,7 +25,8 @@ def send_verification_email(request, user):
     subject = 'Verify your email address - LearnThread'
     message = (
         f"Hi {user.username},\n\n"
-        f"Thank you for joining LearnThread! Please verify your email by clicking the link below:\n\n"
+        f"Thank you for joining LearnThread!\n"
+        f"Please verify your email address by clicking the link below:\n\n"
         f"{verify_url}\n\n"
         f"If you did not create this account, you can safely ignore this email.\n"
     )
@@ -37,6 +40,7 @@ def send_verification_email(request, user):
 
 
 def register_view(request):
+    """Visitor registration view (FR-1, FR-2, FR-43)."""
     if request.user.is_authenticated:
         return redirect('posts:post_list')
 
@@ -59,6 +63,7 @@ def register_view(request):
 
 
 def verify_email_view(request, uidb64, token):
+    """Email verification link handler (FR-43, FR-44)."""
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -75,6 +80,7 @@ def verify_email_view(request, uidb64, token):
 
 
 def resend_verification_view(request):
+    """Resend verification email view (FR-45)."""
     if request.method == 'POST':
         form = ResendVerificationForm(request.POST)
         if form.is_valid():
@@ -93,6 +99,7 @@ def resend_verification_view(request):
 
 
 def login_view(request):
+    """User login view (FR-4, FR-44)."""
     if request.user.is_authenticated:
         return redirect('posts:post_list')
 
@@ -110,13 +117,16 @@ def login_view(request):
 
 
 def logout_view(request):
-    logout(request)
-    messages.info(request, 'You have been logged out.')
+    """User logout view (FR-5)."""
+    if request.user.is_authenticated:
+        logout(request)
+        messages.info(request, 'You have been logged out.')
     return redirect('posts:post_list')
 
 
 @login_required
 def profile_edit_view(request):
+    """Edit own profile (FR-41)."""
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -129,8 +139,11 @@ def profile_edit_view(request):
 
 
 def profile_view(request, username):
+    """Public user profile page with approved posts (FR-40)."""
     profile_user = get_object_or_404(User, username=username)
-    approved_posts = profile_user.posts.filter(status='APPROVED').order_by('-created_at')
+    approved_posts = profile_user.posts.filter(
+        status=PostStatus.APPROVED
+    ).order_by('-created_at')
     return render(request, 'accounts/profile.html', {
         'profile_user': profile_user,
         'posts': approved_posts
@@ -139,9 +152,9 @@ def profile_view(request, username):
 
 @login_required
 def delete_account_view(request):
+    """Delete own account with cascading deletion of all user data (FR-48, FR-49, FR-56, FR-57)."""
     if request.method == 'POST':
         username = request.user.username
-        # Log to admin notifications before deletion (FR-49, FR-57)
         AdminNotification.objects.create(
             notification_type=NotificationType.ACCOUNT_DELETED,
             message=f"User '{username}' deleted their account.",
