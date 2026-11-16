@@ -5,9 +5,9 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('accounts/', include('apps.accounts.urls', namespace='accounts')),
-    path('moderation/', include('apps.moderation.urls', namespace='moderation')),
-    path('', include('apps.posts.urls', namespace='posts')),
+    path('accounts/', include('apps.accounts.urls')),
+    path('moderation/', include('apps.moderation.urls')),
+    path('', include('apps.posts.urls')),
 ]
 
 if settings.DEBUG:

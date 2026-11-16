@@ -1,18 +1,27 @@
 from django.urls import path, reverse_lazy
 from django.contrib.auth import views as auth_views
-from . import views
+from .views import (
+    register_view,
+    verify_email_view,
+    resend_verification_view,
+    login_view,
+    logout_view,
+    profile_edit_view,
+    profile_view,
+    delete_account_view,
+)
 
 app_name = 'accounts'
 
 urlpatterns = [
-    path('register/', views.register_view, name='register'),
-    path('verify/<str:uidb64>/<str:token>/', views.verify_email_view, name='verify_email'),
-    path('resend-verification/', views.resend_verification_view, name='resend_verification'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('profile/edit/', views.profile_edit_view, name='profile_edit'),
-    path('profile/<str:username>/', views.profile_view, name='profile'),
-    path('delete-account/', views.delete_account_view, name='delete_account'),
+    path('register/', register_view, name='register'),
+    path('verify/<str:uidb64>/<str:token>/', verify_email_view, name='verify_email'),
+    path('resend-verification/', resend_verification_view, name='resend_verification'),
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('profile/edit/', profile_edit_view, name='profile_edit'),
+    path('profile/<str:username>/', profile_view, name='profile'),
+    path('delete-account/', delete_account_view, name='delete_account'),
 
     # Password Reset (FR-52)
     path(
@@ -33,7 +42,7 @@ urlpatterns = [
         name='password_reset_done'
     ),
     path(
-        'password-reset-confirm/<uidb64>/<token>/',
+        'password-reset-confirm/<str:uidb64>/<str:token>/',
         auth_views.PasswordResetConfirmView.as_view(
             template_name='accounts/password_reset_confirm.html',
             success_url=reverse_lazy('accounts:password_reset_complete')
